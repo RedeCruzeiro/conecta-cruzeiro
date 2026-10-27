@@ -206,9 +206,7 @@
     .stage img { transition: none; }
   }
 
-  .view[hidden] { display: none; }
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 420px) { .row-2 { grid-template-columns: 1fr; } }
+  .view[hidden], [hidden] { display: none !important; }
   .hint { margin-top: 6px; font-size: .82rem; color: var(--muted); }
   .form-status.ok { color: #1f7a4d; }
   @media (prefers-color-scheme: dark) { .form-status.ok { color: #7fd8a8; } }
@@ -218,6 +216,13 @@
     padding: 16px 18px; line-height: 1.5; font-size: .96rem; margin-bottom: 8px;
   }
   .help-box strong { display: block; margin-bottom: 4px; }
+  .who {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    padding: 14px 16px; margin-bottom: 20px; border-radius: 10px;
+    background: var(--field); border: 1.5px solid var(--line);
+  }
+  .who span { color: var(--muted); font-size: .88rem; }
+  .who b { font-size: 1.05rem; letter-spacing: .02em; }
   .secondary {
     width: 100%; height: 50px; margin-top: 8px; border-radius: 10px;
     border: 1.5px solid var(--line); background: transparent; color: var(--ink);
@@ -280,62 +285,99 @@
 
         <button class="submit" type="submit">Entrar</button>
         <p class="form-status" id="status" role="status" aria-live="polite"></p>
-
         <nav class="links" aria-label="Ajuda com o acesso">
           <a href="#primeiro-acesso">Primeiro acesso</a>
           <a href="#esqueci-senha">Esqueci minha senha</a>
         </nav>
       </form>
 
-      <!-- PRIMEIRO ACESSO -->
-      <form id="criar" class="view" data-view="primeiro-acesso" novalidate hidden>
+      <!-- PRIMEIRO ACESSO SEM LINK -->
+      <section class="view" data-view="primeiro-acesso" hidden>
         <div class="intro">
           <h1>Primeiro acesso</h1>
-          <p>Crie sua senha para entrar no Conecta. Leva menos de um minuto.</p>
+          <p>Seu acesso é criado pelo link que o RH envia no seu WhatsApp.</p>
         </div>
-        <div class="field">
-          <label for="c-nome">Nome completo</label>
-          <div class="control">
-            <input id="c-nome" name="c-nome" type="text" autocomplete="name" aria-describedby="c-nome-msg">
-          </div>
-          <p class="msg" id="c-nome-msg" aria-live="polite"></p>
+        <div class="help-box">
+          <strong>Ainda não recebeu o link?</strong>
+          Fale com o RH e informe sua matrícula. Você recebe a mensagem no WhatsApp, toca no link e cria sua senha.
         </div>
+        <button type="button" class="secondary" data-goto="entrar">Voltar para o login</button>
+      </section>
 
-        <div class="field">
-          <label for="c-matricula">Matrícula</label>
-          <div class="control">
-            <input id="c-matricula" name="c-matricula" type="text" inputmode="numeric" autocomplete="username" aria-describedby="c-matricula-msg c-matricula-hint">
-          </div>
-          <p class="hint" id="c-matricula-hint">A mesma do seu crachá ou holerite.</p>
-          <p class="msg" id="c-matricula-msg" aria-live="polite"></p>
+      <!-- CONVITE (link do WhatsApp) -->
+      <form id="convite" class="view" data-view="convite" novalidate hidden>
+        <div class="intro">
+          <h1 id="cv-titulo">Bem-vindo(a) ao Conecta!</h1>
+          <p>Crie sua senha para entrar. Depois, é só usar sua matrícula e essa senha.</p>
         </div>
-
+        <div class="who"><span>Sua matrícula</span><b id="cv-mat">…</b></div>
         <div class="field">
-          <label for="c-senha">Crie uma senha</label>
+          <label for="cv-senha">Crie uma senha</label>
           <div class="control has-toggle">
-            <input id="c-senha" name="c-senha" type="password" autocomplete="new-password" aria-describedby="c-senha-msg c-senha-hint">
-            <button type="button" class="toggle" aria-controls="c-senha" aria-pressed="false">Mostrar</button>
+            <input id="cv-senha" name="cv-senha" type="password" autocomplete="new-password" aria-describedby="cv-senha-msg cv-senha-hint">
+            <button type="button" class="toggle" aria-controls="cv-senha" aria-pressed="false">Mostrar</button>
           </div>
-          <p class="hint" id="c-senha-hint">Pelo menos 6 caracteres.</p>
-          <p class="msg" id="c-senha-msg" aria-live="polite"></p>
+          <p class="hint" id="cv-senha-hint">Pelo menos 6 caracteres.</p>
+          <p class="msg" id="cv-senha-msg" aria-live="polite"></p>
         </div>
 
         <div class="field">
-          <label for="c-senha2">Repita a senha</label>
+          <label for="cv-senha2">Repita a senha</label>
           <div class="control has-toggle">
-            <input id="c-senha2" name="c-senha2" type="password" autocomplete="new-password" aria-describedby="c-senha2-msg">
-            <button type="button" class="toggle" aria-controls="c-senha2" aria-pressed="false">Mostrar</button>
+            <input id="cv-senha2" name="cv-senha2" type="password" autocomplete="new-password" aria-describedby="cv-senha2-msg">
+            <button type="button" class="toggle" aria-controls="cv-senha2" aria-pressed="false">Mostrar</button>
           </div>
-          <p class="msg" id="c-senha2-msg" aria-live="polite"></p>
+          <p class="msg" id="cv-senha2-msg" aria-live="polite"></p>
         </div>
 
         <button class="submit" type="submit">Criar meu acesso</button>
-        <p class="form-status" id="c-status" role="status" aria-live="polite"></p>
+        <p class="form-status" id="cv-status" role="status" aria-live="polite"></p>
 
-        <nav class="links single" aria-label="Voltar">
-          <a href="#entrar">Já tenho acesso. Entrar</a>
-        </nav>
       </form>
+
+      <!-- NOVA SENHA (link do WhatsApp) -->
+      <form id="novasenha" class="view" data-view="nova-senha" novalidate hidden>
+        <div class="intro">
+          <h1 id="ns-titulo">Criar nova senha</h1>
+          <p>Escolha uma senha nova para entrar no Conecta.</p>
+        </div>
+        <div class="who"><span>Sua matrícula</span><b id="ns-mat">…</b></div>
+        <div class="field">
+          <label for="ns-senha">Crie uma senha</label>
+          <div class="control has-toggle">
+            <input id="ns-senha" name="ns-senha" type="password" autocomplete="new-password" aria-describedby="ns-senha-msg ns-senha-hint">
+            <button type="button" class="toggle" aria-controls="ns-senha" aria-pressed="false">Mostrar</button>
+          </div>
+          <p class="hint" id="ns-senha-hint">Pelo menos 6 caracteres.</p>
+          <p class="msg" id="ns-senha-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="ns-senha2">Repita a senha</label>
+          <div class="control has-toggle">
+            <input id="ns-senha2" name="ns-senha2" type="password" autocomplete="new-password" aria-describedby="ns-senha2-msg">
+            <button type="button" class="toggle" aria-controls="ns-senha2" aria-pressed="false">Mostrar</button>
+          </div>
+          <p class="msg" id="ns-senha2-msg" aria-live="polite"></p>
+        </div>
+
+        <button class="submit" type="submit">Salvar nova senha</button>
+        <p class="form-status" id="ns-status" role="status" aria-live="polite"></p>
+
+      </form>
+
+      <!-- LINK INVÁLIDO -->
+      <section class="view" data-view="link-invalido" hidden>
+        <div class="intro">
+          <h1>Este link não vale mais</h1>
+          <p id="inv-texto">Ele já foi usado ou passou do prazo.</p>
+        </div>
+        <div class="help-box">
+          <strong>O que fazer</strong>
+          Peça um link novo ao RH. Se você já criou sua senha, é só entrar com sua matrícula.
+        </div>
+        <button type="button" class="secondary" data-goto="entrar">Ir para o login</button>
+      </section>
 
       <!-- ESQUECI A SENHA -->
       <section class="view" data-view="esqueci-senha" hidden>
@@ -344,8 +386,8 @@
           <p>Sem problema, o RH resolve rapidinho.</p>
         </div>
         <div class="help-box">
-          <strong>Fale com o RH</strong>
-          Peça para redefinir sua senha informando sua matrícula. Eles criam uma senha provisória e você entra com ela.
+          <strong>Peça um link de nova senha</strong>
+          Fale com o RH e informe sua matrícula. Você recebe um link no WhatsApp e cria a senha nova sozinho(a).
         </div>
         <button type="button" class="secondary" data-goto="entrar">Voltar para o login</button>
       </section>
@@ -378,7 +420,7 @@
     iniciar();
   })();
 
-  // Mostrar / ocultar senha (todos os campos de senha)
+  // Mostrar / ocultar senha
   document.querySelectorAll('.toggle').forEach((toggle) => {
     const campo = document.getElementById(toggle.getAttribute('aria-controls'));
     toggle.addEventListener('click', () => {
@@ -393,23 +435,50 @@
   const sb = C.cliente();
   const IR_PARA_APP = () => window.location.replace('app.html');
 
-  // Se já está logado, vai direto para a plataforma
-  sb.auth.getSession().then(({ data }) => { if (data && data.session) IR_PARA_APP(); });
-
-  // Troca de tela pelo endereço (#primeiro-acesso, #esqueci-senha)
+  // ---- Telas ----
   const views = document.querySelectorAll('.view');
-  function mostrarTela() {
-    const alvo = (location.hash || '#entrar').slice(1);
-    const existe = [...views].some(v => v.dataset.view === alvo);
-    const nome = existe ? alvo : 'entrar';
+  function mostrar(nome) {
     views.forEach(v => { v.hidden = v.dataset.view !== nome; });
-    const primeiro = document.querySelector(`.view[data-view="${nome}"] input, .view[data-view="${nome}"] button`);
-    if (primeiro && document.activeElement && document.activeElement.tagName !== 'BODY') primeiro.focus();
   }
-  window.addEventListener('hashchange', mostrarTela);
+  let token = null;
+  async function rotear() {
+    const h = location.hash.slice(1);
+    const m = h.match(/^(convite|senha)=([A-Za-z0-9]+)$/);
+    if (m) {
+      token = m[2];
+      const tipoEsperado = m[1] === 'convite' ? 'acesso' : 'senha';
+      const pref = m[1] === 'convite' ? 'cv' : 'ns';
+      const { data, error } = await sb.rpc('conecta_convite_info', { p_token: token });
+      if (error || !data || !data.ok || data.tipo !== tipoEsperado) {
+        document.getElementById('inv-texto').textContent =
+          (data && data.motivo === 'vencido') ? 'O prazo deste link acabou.' :
+          (data && data.motivo === 'usado') ? 'Este link já foi usado.' :
+          error ? 'Não foi possível conferir o link agora. Verifique a internet e tente de novo.' :
+          'Não encontramos este link.';
+        mostrar('link-invalido'); return;
+      }
+      const primeiro = String(data.nome).split(' ')[0];
+      document.getElementById(pref + '-titulo').textContent =
+        pref === 'cv' ? `Olá, ${primeiro}! Bem-vindo(a) ao Conecta` : `Olá, ${primeiro}! Vamos criar sua nova senha`;
+      document.getElementById(pref + '-mat').textContent = data.matricula;
+      document.getElementById(pref === 'cv' ? 'convite' : 'novasenha').dataset.matricula = data.matricula;
+      document.getElementById(pref === 'cv' ? 'convite' : 'novasenha').dataset.nome = data.nome;
+      mostrar(pref === 'cv' ? 'convite' : 'nova-senha');
+      return;
+    }
+    const nomes = ['entrar', 'primeiro-acesso', 'esqueci-senha'];
+    mostrar(nomes.includes(h) ? h : 'entrar');
+    // Já logado? vai direto para a plataforma
+    if (!h || h === 'entrar') {
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) IR_PARA_APP();
+    }
+  }
+  window.addEventListener('hashchange', rotear);
   document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.goto; }));
-  mostrarTela();
+  rotear();
 
+  // ---- Ajudantes ----
   function erro(input, texto) {
     const msg = document.getElementById(input.id + '-msg');
     msg.textContent = texto;
@@ -417,25 +486,30 @@
     return !texto;
   }
   function ocupado(botao, sim, texto) { botao.disabled = sim; botao.textContent = texto; }
-
   function traduzirErro(err) {
     const m = String((err && (err.code || err.message)) || '').toLowerCase();
     if (m.includes('invalid_credentials') || m.includes('invalid login')) return 'Matrícula ou senha incorretas. Confira e tente de novo.';
-    if (m.includes('user_already_exists') || m.includes('already registered')) return 'Essa matrícula já tem acesso. Entre com sua senha ou fale com o RH.';
+    if (m.includes('user_already_exists') || m.includes('already registered')) return 'Essa matrícula já tem acesso. Entre com sua senha ou peça ao RH um link de nova senha.';
     if (m.includes('weak_password') || m.includes('password should')) return 'Senha fraca. Use pelo menos 6 caracteres.';
-    if (m.includes('email_address_invalid') || m.includes('invalid format') || m.includes('email address')) return 'O servidor recusou o login interno. Avise o TI (item 4 do guia).';
-    if (m.includes('signup_disabled') || m.includes('signups not allowed')) return 'O cadastro está fechado no momento. Fale com o RH.';
-    if (m.includes('email_not_confirmed')) return 'Acesso aguardando confirmação. Avise o TI (item 3 do guia).';
+    if (m.includes('database error') || m.includes('unexpected_failure') || m.includes('convite_invalido')) return 'Este convite não vale mais. Peça um link novo ao RH.';
+    if (m.includes('email_not_confirmed')) return 'Acesso aguardando confirmação. Avise o TI (item 2 do guia).';
     if (m.includes('failed to fetch') || m.includes('network')) return 'Sem conexão com o servidor. Verifique a internet e tente de novo.';
     return 'Não foi possível concluir agora. Tente de novo em instantes.';
   }
+  function conferirSenhas(pref) {
+    const s1 = document.getElementById(pref + '-senha'), s2 = document.getElementById(pref + '-senha2');
+    const ok1 = erro(s1, s1.value.length >= 6 ? '' : 'A senha precisa ter pelo menos 6 caracteres.');
+    const ok2 = erro(s2, s2.value === s1.value ? '' : 'As senhas não são iguais.');
+    if (!ok1) { s1.focus(); return null; }
+    if (!ok2) { s2.focus(); return null; }
+    return s1.value;
+  }
 
-  // ENTRAR
+  // ---- Entrar ----
   const form = document.getElementById('login');
   const matricula = document.getElementById('matricula');
   const senha = document.getElementById('senha');
   const status = document.getElementById('status');
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     status.textContent = '';
@@ -445,7 +519,6 @@
     const ok2 = erro(senha, pwd ? '' : 'Informe sua senha.');
     if (!ok1) { matricula.focus(); return; }
     if (!ok2) { senha.focus(); return; }
-
     const botao = form.querySelector('.submit');
     ocupado(botao, true, 'Entrando…');
     try {
@@ -458,52 +531,60 @@
     }
   });
 
-  // PRIMEIRO ACESSO
-  const criar = document.getElementById('criar');
-  const cNome = document.getElementById('c-nome');
-  const cMat = document.getElementById('c-matricula');
-  const cSenha = document.getElementById('c-senha');
-  const cSenha2 = document.getElementById('c-senha2');
-  const cStatus = document.getElementById('c-status');
-
-  criar.addEventListener('submit', async (e) => {
+  // ---- Convite: criar acesso ----
+  const fConvite = document.getElementById('convite');
+  fConvite.addEventListener('submit', async (e) => {
     e.preventDefault();
-    cStatus.textContent = ''; cStatus.classList.remove('ok');
-    const nome = cNome.value.trim().replace(/\s+/g, ' ');
-    const mat = C.normalizarMatricula(cMat.value);
-    const checks = [
-      [cNome, nome.length >= 3 ? '' : 'Informe seu nome completo.'],
-      [cMat, !cMat.value.trim() ? 'Informe sua matrícula.' : (mat === C.usuarioAdmin || !/^\d{1,10}$/.test(mat)) ? 'Use só os números da matrícula.' : ''],
-      [cSenha, cSenha.value.length >= 6 ? '' : 'A senha precisa ter pelo menos 6 caracteres.'],
-      [cSenha2, cSenha2.value === cSenha.value ? '' : 'As senhas não são iguais.']
-    ];
-    let primeiroErro = null;
-    for (const [campo, msg] of checks) { if (!erro(campo, msg) && !primeiroErro) primeiroErro = campo; }
-    if (primeiroErro) { primeiroErro.focus(); return; }
-
-    const botao = criar.querySelector('.submit');
+    const st = document.getElementById('cv-status'); st.textContent = ''; st.classList.remove('ok');
+    const pwd = conferirSenhas('cv'); if (!pwd) return;
+    const mat = fConvite.dataset.matricula;
+    const botao = fConvite.querySelector('.submit');
     ocupado(botao, true, 'Criando acesso…');
     try {
+      await sb.auth.signOut().catch(() => {});
       const { data, error } = await sb.auth.signUp({
-        email: C.emailDaMatricula(mat),
-        password: cSenha.value,
-        options: { data: { full_name: nome, matricula: mat } }
+        email: C.emailDaMatricula(mat), password: pwd,
+        options: { data: { convite: token, full_name: fConvite.dataset.nome, matricula: mat } }
       });
       if (error) throw error;
-      if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        throw { code: 'user_already_exists' };
-      }
+      if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw { code: 'user_already_exists' };
       if (!data.session) {
-        cStatus.textContent = 'Acesso criado, mas o servidor pediu confirmação por e-mail. Avise o TI (item 3 do guia).';
-        ocupado(botao, false, 'Criar meu acesso');
-        return;
+        st.textContent = 'Acesso criado, mas o servidor pediu confirmação por e-mail. Avise o TI (item 2 do guia).';
+        ocupado(botao, false, 'Criar meu acesso'); return;
       }
-      cStatus.classList.add('ok');
-      cStatus.textContent = 'Acesso criado! Entrando…';
+      st.classList.add('ok'); st.textContent = 'Acesso criado! Entrando…';
+      history.replaceState(null, '', location.pathname);
       IR_PARA_APP();
     } catch (err) {
-      cStatus.textContent = traduzirErro(err);
+      st.textContent = traduzirErro(err);
       ocupado(botao, false, 'Criar meu acesso');
+    }
+  });
+
+  // ---- Nova senha ----
+  const fNova = document.getElementById('novasenha');
+  fNova.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const st = document.getElementById('ns-status'); st.textContent = ''; st.classList.remove('ok');
+    const pwd = conferirSenhas('ns'); if (!pwd) return;
+    const botao = fNova.querySelector('.submit');
+    ocupado(botao, true, 'Salvando…');
+    try {
+      const { data, error } = await sb.rpc('conecta_redefinir_senha', { p_token: token, p_senha: pwd });
+      if (error) throw error;
+      if (!data || !data.ok) {
+        st.textContent = data && data.motivo === 'senha_curta' ? 'A senha precisa ter pelo menos 6 caracteres.' : 'Este link não vale mais. Peça um novo ao RH.';
+        ocupado(botao, false, 'Salvar nova senha'); return;
+      }
+      st.classList.add('ok'); st.textContent = 'Senha salva! Entrando…';
+      await sb.auth.signOut().catch(() => {});
+      const r = await sb.auth.signInWithPassword({ email: C.emailDaMatricula(data.matricula), password: pwd });
+      history.replaceState(null, '', location.pathname);
+      if (r.error) { location.hash = 'entrar'; return; }
+      IR_PARA_APP();
+    } catch (err) {
+      st.textContent = traduzirErro(err);
+      ocupado(botao, false, 'Salvar nova senha');
     }
   });
 </script>
