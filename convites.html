@@ -94,6 +94,10 @@
   .b-off { background: var(--off-bg); color: var(--off-ink); }
   .link { background: none; border: 0; font: inherit; font-weight: 700; color: var(--royal); cursor: pointer; padding: 6px 4px; }
   @media (prefers-color-scheme: dark) { .link { color: var(--teal); } }
+  td.f { width: 52px; padding-right: 0; }
+  .av { width: 36px; height: 36px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; background: var(--off-bg); color: var(--off-ink); font-size: .78rem; font-weight: 700; }
+  .av img { width: 100%; height: 100%; object-fit: cover; }
+  .link.danger { color: var(--error); margin-right: 6px; }
   .empty { padding: 28px 12px; text-align: center; color: var(--muted); }
 
   dialog { margin: auto; border: 0; border-radius: 16px; padding: 0; width: min(560px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); box-shadow: 0 24px 60px rgba(10,20,50,.35); }
@@ -161,7 +165,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Nome</th><th>Matrícula</th><th>Unidade</th><th>Acesso</th><th class="r"><span class="sr">Ação</span></th></tr></thead>
+        <thead><tr><th><span class="sr">Foto</span></th><th>Nome</th><th>Matrícula</th><th>Unidade</th><th>Acesso</th><th class="r"><span class="sr">Ação</span></th></tr></thead>
         <tbody id="linhas"></tbody>
       </table>
     </div>
@@ -203,7 +207,8 @@
   const C = window.CONECTA_CONFIG, sb = C.cliente();
   const $ = (id) => document.getElementById(id);
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  let funcionarios = [], unidades = [], convites = [], filtro = 'todos';
+  let funcionarios = [], unidades = [], convites = [], avatares = {}, filtro = 'todos';
+  const urlCache = new Map();
   let atual = null; // { emp, tipo }
 
   const toast = (t) => { const d = document.createElement('div'); d.className = 'toast'; d.setAttribute('role', 'status'); d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); };
@@ -234,7 +239,7 @@
 
   async function carregar() {
     const [d, c] = await Promise.all([
-      sb.from('docs').select('path,data').in('parent', ['employees', 'units']).range(0, 4999),
+      sb.from('docs').select('path,data').in('parent', ['employees', 'units', 'avatars']).range(0, 4999),
       sb.from('convites').select('*').is('usado_em', null).gt('expira_em', new Date().toISOString())
     ]);
     if (d.error) { toast('Não foi possível carregar os colaboradores.'); return; }
@@ -243,6 +248,7 @@
     unidades = d.data.filter(r => r.path.startsWith('units/')).map(r => ({ ...r.data, id: r.path.split('/')[1] }))
       .sort((a, b) => String(a.code || '').localeCompare(String(b.code || ''), 'pt-BR', { numeric: true }));
     convites = c.error ? [] : c.data;
+    avatares = {}; d.data.filter(r => r.path.startsWith('avatars/')).forEach(r => { if (r.data && r.data.ref) avatares[r.path.split('/')[1]] = r.data.ref; });
     const sel = $('n-unid'), atualSel = sel.value;
     sel.innerHTML = '<option value="">Escolha a unidade</option>' + unidades.map(u => `<option value="${u.id}">${esc(nomeUnidade(u))}</option>`).join('');
     sel.value = atualSel;
@@ -258,7 +264,7 @@
       if (filtro === 'sem' && temAcesso(e)) return false;
       return !q || String(e.fullName).toLowerCase().includes(q) || String(e.matricula || '').includes(q);
     });
-    if (!lista.length) { $('linhas').innerHTML = `<tr><td colspan="5" class="empty">${funcionarios.length ? 'Ninguém encontrado com esse filtro.' : 'Nenhum colaborador ainda. Cadastre o primeiro acima.'}</td></tr>`; return; }
+    if (!lista.length) { $('linhas').innerHTML = `<tr><td colspan="6" class="empty">${funcionarios.length ? 'Ninguém encontrado com esse filtro.' : 'Nenhum colaborador ainda. Cadastre o primeiro acima.'}</td></tr>`; return; }
     $('linhas').innerHTML = lista.map(e => {
       const u = unidades.find(x => x.id === e.unitId);
       const cv = conviteAberto(e);
@@ -267,8 +273,21 @@
         : '<span class="badge b-off">Sem acesso</span>';
       const acao = temAcesso(e) ? `<button class="link" data-acao="senha" data-id="${e.id}">Link de nova senha</button>`
         : `<button class="link" data-acao="acesso" data-id="${e.id}">${cv ? 'Reenviar convite' : 'Enviar convite'}</button>`;
-      return `<tr><td class="n">${esc(e.fullName)}</td><td>${esc(e.matricula || '—')}</td><td>${esc(nomeUnidade(u) || '—')}</td><td>${badge}</td><td class="r">${acao}</td></tr>`;
+      const ref = e.userId && avatares[e.userId];
+      const ini = esc(String(e.fullName || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase());
+      const foto = ref ? `<span class="av" data-ref="${esc(ref)}">${ini}</span>` : `<span class="av">${ini}</span>`;
+      const tirar = ref ? `<button class="link danger" data-acao="tirarfoto" data-id="${e.id}">Remover foto</button>` : '';
+      return `<tr><td class="f">${foto}</td><td class="n">${esc(e.fullName)}</td><td>${esc(e.matricula || '—')}</td><td>${esc(nomeUnidade(u) || '—')}</td><td>${badge}</td><td class="r">${tirar}${acao}</td></tr>`;
     }).join('');
+    document.querySelectorAll('#linhas .av[data-ref]').forEach(async (el) => {
+      const ref = el.dataset.ref;
+      if (!urlCache.has(ref)) {
+        const { data } = await sb.storage.from('arquivos').createSignedUrl(ref.replace(/^sb:/, ''), 3600);
+        urlCache.set(ref, data ? data.signedUrl : '');
+      }
+      const u = urlCache.get(ref);
+      if (u) el.innerHTML = `<img src="${u}" alt="">`;
+    });
   }
   $('busca').addEventListener('input', desenhar);
   document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
@@ -276,9 +295,17 @@
   }));
   $('linhas').addEventListener('click', (ev) => {
     const b = ev.target.closest('button[data-acao]'); if (!b) return;
-    const emp = funcionarios.find(e => e.id === b.dataset.id); if (emp) abrirDados(emp, b.dataset.acao);
+    const emp = funcionarios.find(e => e.id === b.dataset.id); if (!emp) return;
+    if (b.dataset.acao === 'tirarfoto') { tirarFoto(emp); return; }
+    abrirDados(emp, b.dataset.acao);
   });
 
+  async function tirarFoto(emp) {
+    if (!confirm(`Remover a foto de perfil de ${emp.fullName}?`)) return;
+    const r = await sb.from('docs').delete().eq('path', 'avatars/' + emp.userId);
+    if (r.error) { toast('Não foi possível remover: ' + r.error.message); return; }
+    delete avatares[emp.userId]; desenhar(); toast('Foto removida.');
+  }
   function matriculaEmUso(mat, exceto) { return funcionarios.some(e => e.id !== exceto && C.normalizarMatricula(e.matricula || '') === mat); }
 
   // ---- Novo colaborador ----
